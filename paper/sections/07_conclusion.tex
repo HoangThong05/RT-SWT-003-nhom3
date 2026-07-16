@@ -1,0 +1,51 @@
+% sections/07_conclusion.tex
+% §7 Conclusion — RW (Võ Thanh Phong, SE194101)
+% Nguồn: RQ1_results_FINAL.md + full_metrics_output_FINAL.csv + proposal.md §4
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We investigated whether Qwen2.5-7B-Instruct with 3-shot prompting
+can match the quality thresholds established by GPT-4o 3-shot
+(CTQRS$\geq$75\%, SBERT$\geq$0.82, ROUGE-1$\geq$0.47)
+on 262 Bugzilla bug reports~\cite{acharya2025bugquality}.
+Our results are mixed. Qwen2.5-7B few-shot exceeds the
+structural quality threshold (median CTQRS=88.89\%,
+$p<0.001$, $\delta=0.908$, large) and the lexical overlap
+threshold (median ROUGE-1=0.491, $p=0.002$, $\delta=0.191$,
+small), but falls substantially below the semantic
+similarity threshold (median SBERT=0.632, $p=1.000$,
+$\delta=-0.969$, large). An ablation study adding a
+length constraint to the prompt improved ROUGE-1
+(0.491$\rightarrow$0.532) but further reduced SBERT
+(0.632$\rightarrow$0.609), confirming that the SBERT
+deficit stems from output style mismatch rather than
+semantic content errors.
+
+This is the first study to directly evaluate Qwen2.5-7B
+few-shot prompting against published GPT-4o few-shot thresholds
+on the bug report restructuring task. Our findings suggest
+that, for organizations with limited GPU resources that
+cannot afford fine-tuning, Qwen2.5-7B 3-shot prompting is
+a viable option for producing structurally complete bug reports
+(CTQRS) with adequate lexical fidelity (ROUGE-1), but style
+alignment with Bugzilla-style ground-truth reports remains
+an open challenge that few-shot prompting alone cannot resolve.
+
+Future work could investigate three concrete directions:
+(1) applying style-specific constraints or in-context style
+exemplars that more precisely match the plain-text, concise
+Bugzilla writing style to close the SBERT gap without
+fine-tuning;
+(2) cross-domain evaluation on Mojira/Minecraft or mobile
+app bug trackers to assess generalizability beyond Mozilla
+projects;
+(3) lightweight parameter-efficient fine-tuning (e.g.,
+LoRA~\cite{acharya2025bugquality}) on a small domain-specific
+sample to quantify the minimum training investment needed
+to close the remaining gap.
+
+Our replication package --- including the dataset split,
+3-shot prompt template, inference scripts, metric scorer,
+and raw results --- is publicly available at
+\url{https://github.com/HoangThong05/RT-SWT-003-nhom3}.

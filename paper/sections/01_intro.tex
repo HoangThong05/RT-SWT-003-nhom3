@@ -1,0 +1,82 @@
+\section{Introduction}
+\label{sec:intro}
+
+Bug reports are the primary communication channel between end users and 
+development teams in software maintenance, providing developers with 
+critical information to identify, triage, and resolve software defects~\cite{acharya2025bugquality}. 
+However, the effectiveness of bug reports is often hindered by ambiguity, 
+incompleteness, or inconsistency in the information provided by 
+reporters~\cite{acharya2025bugquality}. Well-structured reports that clearly articulate 
+Steps to Reproduce (S2R), Expected Behavior (EB), and Actual Behavior (AB) 
+minimize ambiguity and enable developers to resolve issues without extensive 
+discussion and clarification~\cite{acharya2025bugquality}. Challenges in bug reporting 
+persist due to factors such as varying reporter experience and difficulty in 
+providing essential details like reproduction steps and expected 
+outcomes~\cite{acharya2025bugquality}.
+
+Recent advances in large language models (LLMs) have opened a promising 
+direction: automatically restructuring unstructured bug descriptions into 
+well-formed reports. Proprietary models such as GPT-4o have demonstrated 
+strong few-shot performance on this task, achieving CTQRS=75\% and 
+SBERT=0.82 in 3-shot setting~\cite{acharya2025bugquality}. Open-source 
+alternatives such as Qwen2.5-7B have shown competitive results when 
+fine-tuned on domain-specific datasets, reaching CTQRS=77\% after 
+instruction fine-tuning~\cite{acharya2025bugquality}, CTQRS=80.5\% with 
+QLoRA-4bit multi-agent pipeline~\cite{choi2025agentreport}, and 
+CTQRS=0.76 with PPO reinforcement learning~\cite{yang2025ctqrsrl}. 
+The Crowdsourced Test Report Quality Score (CTQRS)~\cite{zhang2022ctqrs} 
+has emerged as a principled metric for evaluating structural completeness 
+of generated reports, complementing lexical (ROUGE-1) and semantic (SBERT) 
+similarity measures.
+
+However, a critical gap remains in the literature. Existing work on 
+Qwen2.5-7B consistently relies on supervised fine-tuning (LoRA, QLoRA) or 
+reinforcement learning before evaluation~\cite{acharya2025bugquality, choi2025agentreport, yang2025ctqrsrl}. 
+No prior study has examined whether Qwen2.5-7B under \emph{few-shot prompting only} 
+--- without any additional training --- can match the quality thresholds 
+achieved by GPT-4o in the same few-shot setting. This distinction matters 
+practically: organizations with constrained GPU budgets may prefer a 
+zero-training-cost deployment, yet without empirical evidence, they cannot 
+make an informed choice between few-shot prompting and investing in fine-tuning.
+
+In this paper, we address this gap with a controlled empirical study. 
+We apply Qwen2.5-7B-Instruct with 3-shot prompting (Alpaca-LoRA template, 
+following~\cite{acharya2025bugquality}) to 262 Bugzilla bug reports from 
+the GindeLab dataset~\cite{acharya2025bugquality} and measure CTQRS, 
+ROUGE-1 F1, and SBERT cosine similarity against the thresholds published 
+for GPT-4o 3-shot. Statistical significance is assessed using the 
+Wilcoxon signed-rank one-sample test ($\alpha = 0.05$) with Cliff's $\delta$ 
+as the effect size measure~\cite{arcuri2011practical}. 
+To our knowledge, this is the first study to directly evaluate 
+Qwen2.5-7B few-shot performance against established GPT-4o few-shot 
+thresholds on the bug report restructuring task.
+
+To summarize, this paper contributes:
+\begin{enumerate}
+    \item The first empirical evaluation of Qwen2.5-7B-Instruct 3-shot 
+    prompting for bug report quality assessment using CTQRS, ROUGE-1, 
+    and SBERT on the Bugzilla dataset (N=262).
+    
+    \item Experimental results showing mixed outcomes: Qwen2.5-7B 
+    few-shot achieves CTQRS=88.89\% (p$<$0.001, $\delta$=0.908) and 
+    ROUGE-1=0.491 (p=0.002, $\delta$=0.191) above the GPT-4o thresholds, 
+    but SBERT=0.632 (p=1.000, $\delta$=-0.969) below threshold --- 
+    attributable to output style mismatch rather than semantic content errors.
+    
+    \item An ablation study demonstrating that length-constraining the 
+    prompt improves ROUGE-1 (0.491$\rightarrow$0.532) but does not resolve 
+    the SBERT gap (0.632$\rightarrow$0.609), providing evidence that 
+    fine-tuning remains necessary for style alignment.
+    
+    \item A public replication package including dataset, prompts, scripts, 
+    and raw results available at: 
+    \url{https://github.com/HoangThong05/RT-SWT-003-nhom3}.
+\end{enumerate}
+
+The remainder of this paper is structured as follows. 
+Section~\ref{sec:related} reviews related work. 
+Section~\ref{sec:method} describes the experimental methodology. 
+Section~\ref{sec:results} presents results. 
+Section~\ref{sec:discussion} discusses findings and implications. 
+Section~\ref{sec:threats} addresses threats to validity. 
+Section~\ref{sec:conclusion} concludes.

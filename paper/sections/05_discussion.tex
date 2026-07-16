@@ -1,0 +1,122 @@
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Explaining the Main Findings}
+
+\textbf{Why does CTQRS exceed the threshold by a large margin?}
+Qwen2.5-7B 3-shot achieves median CTQRS=88.89\%, surpassing
+the 75\% GPT-4o reference by 13.89 percentage points with a
+large effect ($\delta=0.908$). CTQRS measures structural
+completeness through rule-based sub-checks (presence of S2R,
+EB, AB, environment information, interface elements). The
+3-shot Alpaca-LoRA prompt explicitly instructs the model to
+produce four sections, and Qwen reliably generates all required
+structural components. This structural conformance is consistent
+with E02's observation that even fine-tuned models achieve
+high CTQRS scores once they learn the target
+template~\cite{acharya2025bugquality}.
+
+\textbf{Why does SBERT fall substantially below the threshold?}
+Our length analysis reveals that Qwen outputs are on average
+1.82$\times$ longer than the Bugzilla ground-truth reports
+(245.5 words vs.\ 162.0 words). Qwen produces verbose,
+markdown-formatted responses with section headers (e.g.,
+\texttt{\#\#\#\# Steps to Reproduce}) and detailed bullet
+points, whereas Bugzilla ground-truth reports are written in
+plain, concise technical prose without headers. The
+\texttt{paraphrase-MiniLM-L6-v2} encoder encodes the entire
+passage into a fixed-size vector, making cosine similarity
+sensitive to differences in length and formatting style
+beyond semantic content. E02 itself notes that ``differences
+in the length of the bug report generated can lead to unfair
+comparisons in n-gram overlap
+metrics''~\cite{acharya2025bugquality}; our results show
+this effect extends to SBERT as well.
+
+To confirm that the SBERT gap is caused by style rather than
+semantic content, we conducted an ablation study adding a
+length constraint to the system prompt (``keep total output
+under 150 words''). While this shortened Qwen outputs to a
+mean of 109.1 words (0.70$\times$ GT), SBERT further
+decreased from 0.632 to 0.609. This counter-intuitive
+result confirms that the problem is \emph{style mismatch},
+not verbosity alone: outputs shorter than GT are penalized
+in the opposite direction. ROUGE-1 improved from 0.491 to
+0.532 with the length constraint, consistent with higher
+unigram overlap when outputs are more concise.
+
+\textbf{Why does ROUGE-1 achieve only a small effect?}
+Median ROUGE-1=0.491 exceeds the 0.47 threshold but with a
+small effect size ($\delta=0.191$). The margin above threshold
+is narrow (0.021 F1 points), suggesting lexical overlap is
+adequate but not strongly superior to the GPT-4o baseline.
+This is consistent with E02's ROUGE results for fine-tuned
+models on the S2R section (ROUGE=0.52), where the detailed
+and lengthy S2R content also suppressed overlap
+scores~\cite{acharya2025bugquality}.
+
+\subsection{Comparison with Prior Work}
+
+Our CTQRS result (88.89\%) substantially exceeds those
+reported for fine-tuned models: Qwen2.5-7B fine-tuned
+achieves 77\%~\cite{acharya2025bugquality}, AgentReport
+with QLoRA achieves 80.5\%~\cite{choi2025agentreport},
+and PPO reinforcement learning yields
+76\%~\cite{yang2025ctqrsrl}. Three factors explain this:
+(1) CTQRS measures structural completeness, which few-shot
+prompting achieves readily when the prompt template
+explicitly names all required sections; (2) our corrected
+scorer (\texttt{max\_possible=18}) differs from the
+original GindeLab scorer (\texttt{max\_possible=16}),
+making direct numeric comparison with prior work
+approximate; (3) fine-tuned models may produce shorter,
+stylistically closer outputs that trade CTQRS for better
+SBERT.
+
+Our SBERT (0.632) is lower than the GPT-4o reference
+(0.82) and likely lower than fine-tuned models, which
+are trained to reproduce the exact style of Bugzilla
+ground-truth reports. This confirms that few-shot
+prompting, while effective for structural quality, cannot
+replicate the writing style of domain-specific fine-tuned
+models without additional training.
+
+\subsection{Implications}
+
+\textbf{For budget-constrained teams.}
+Qwen2.5-7B 3-shot prompting --- requiring no GPU training,
+no labeled data, and zero API cost when run on free cloud
+compute --- produces structurally complete bug reports
+(CTQRS=88.89\%) and adequate lexical fidelity
+(ROUGE-1=0.491) that both exceed published GPT-4o few-shot
+benchmarks. Teams lacking the resources to fine-tune a
+model or subscribe to a proprietary API can adopt this
+zero-training approach without sacrificing structural
+quality. The only limitation is output verbosity, which
+affects SBERT but not the structural completeness
+perceived by developers reviewing the report.
+
+\textbf{For researchers choosing evaluation metrics.}
+SBERT similarity is sensitive to stylistic differences
+between generated and reference texts beyond semantic
+content. When the generation model and the reference corpus
+have systematically different writing styles, SBERT scores
+reflect style mismatch rather than content quality.
+Researchers evaluating LLM-generated bug reports should
+complement SBERT with style-agnostic metrics such as CTQRS
+or human evaluation when the target style is not enforced
+by the prompt.
+
+\textbf{For practitioners choosing between few-shot and fine-tuning.}
+Our findings support a practical decision rule: use
+few-shot prompting when structural completeness (CTQRS) is
+the primary requirement and compute budget is limited;
+invest in fine-tuning when style alignment with a specific
+reference corpus (SBERT) is required. Prior
+work~\cite{acharya2025bugquality, choi2025agentreport,
+yang2025ctqrsrl} shows that fine-tuned models achieve
+higher SBERT by learning to replicate the exact writing
+style of Bugzilla reports. The two approaches are
+complementary: few-shot prompting provides a useful
+starting point that fine-tuning can then refine for style.

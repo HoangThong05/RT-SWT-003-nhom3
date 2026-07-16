@@ -1,0 +1,4 @@
+RQ,metric,unit,N,median,mean,std,threshold,p_value,p_bonferroni,cliffs_delta,effect_size_interp,reject_H0,conclusion,model,prompt_strategy,dataset
+RQ1,CTQRS_%,%,262,88.8889,87.0865,7.1948,75.0,0.0,0.0,0.908,large,True,ĐẠT ngưỡng,Qwen2.5-7B-Instruct,3-shot Alpaca-LoRA template,"Bugzilla (GindeLab/Ease_2025_AI_model, 10% subset seed=42)"
+RQ1,SBERT,0-1,262,0.6319,0.6111,0.1247,0.82,1.0,3.0,-0.969,large,False,KHÔNG ĐẠT ngưỡng,Qwen2.5-7B-Instruct,3-shot Alpaca-LoRA template,"Bugzilla (GindeLab/Ease_2025_AI_model, 10% subset seed=42)"
+RQ1,ROUGE-1,0-1,262,0.4909,0.4853,0.0996,0.47,0.001645,0.004936,0.191,small,True,ĐẠT ngưỡng,Qwen2.5-7B-Instruct,3-shot Alpaca-LoRA template,"Bugzilla (GindeLab/Ease_2025_AI_model, 10% subset seed=42)"

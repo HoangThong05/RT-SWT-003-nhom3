@@ -1,0 +1,75 @@
+
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Bug Report Quality Assessment and Generation}
+
+Early work on bug report quality used heuristic rules and
+machine learning to detect incomplete or ambiguous reports.
+Chaparro et al. assessed the quality of Steps to Reproduce
+(S2R) using grammar parsing and neural sequence
+labelling~\cite{chaparro2019assessing}. Zhang et al.
+proposed CTQRS~\cite{zhang2022ctqrs}, a rule-based framework
+that scores reports across morphological, relational, and
+analytical dimensions. These studies established the
+evaluation criteria that later LLM-based approaches inherited.
+
+More recent work has shifted from detecting quality issues to
+automatically fixing them using LLMs. Bo et al.~\cite{bo2024chatbr}
+(ChatBR) combined a BERT-based detector with GPT-3.5-turbo to
+generate missing information, achieving precision improvements
+of 25.38--29.20\% over prior methods on six OSS projects.
+Akyol et al.~\cite{akyol2026improbr} (ImproBR) used a
+retrieval-augmented pipeline with GPT-4o mini to improve
+Mojira/Minecraft reports, increasing the proportion of
+complete reports from 7.9\% to 96.4\%. These approaches
+demonstrate the effectiveness of proprietary LLMs in
+few-shot or RAG settings, but rely on commercial APIs
+that impose cost and privacy constraints.
+
+\subsection{Open-Source LLMs with Training Adaptation}
+
+To address cost and privacy limitations of proprietary
+models, several studies have fine-tuned open-source LLMs
+for bug report generation.
+Acharya and Ginde~\cite{acharya2025bugquality} instruction
+fine-tuned Qwen2.5-7B, Mistral-7B, and Llama3.2-3B on the
+Bugzilla dataset (N=3,903) using the Alpaca-LoRA template,
+with GPT-4o 3-shot as the reference baseline. Their
+fine-tuned Qwen2.5-7B achieved CTQRS=77\%, ROUGE-1=0.61,
+SBERT=0.85 versus GPT-4o 3-shot at CTQRS=75\%,
+ROUGE-1=0.47, SBERT=0.82.
+Choi and Yang~\cite{choi2025agentreport} (AgentReport)
+applied QLoRA-4bit with a multi-agent pipeline on the same
+Bugzilla corpus, reaching CTQRS=80.5\%.
+Yang~\cite{yang2025ctqrsrl} further trained Qwen2.5-7B with
+PPO reinforcement learning using CTQRS as the reward signal,
+improving CTQRS from 0.46 to 0.76.
+
+A consistent finding across these studies is that training
+adaptation --- whether supervised fine-tuning or reinforcement
+learning --- is necessary to achieve competitive SBERT scores,
+as untrained models produce outputs with different stylistic
+characteristics than the Bugzilla reference corpus.
+Dın\c{c} et al.~\cite{dinc2025quality} corroborate this:
+on a 10,000-report Mozilla Firefox corpus, a fine-tuned
+RoBERTa model (F1=0.909) outperformed zero-shot and
+few-shot LLM approaches, highlighting the value of
+domain-specific training.
+
+\subsection{Gap and Positioning}
+
+Across all 13 papers we reviewed, Qwen2.5-7B appears
+exclusively in fine-tuned or RL-adapted
+configurations~\cite{acharya2025bugquality,
+choi2025agentreport, yang2025ctqrsrl}. GPT-4o and
+GPT-4o mini serve as few-shot baselines in several
+studies~\cite{acharya2025bugquality, akyol2026improbr},
+but no study has directly evaluated whether
+\emph{Qwen2.5-7B in a few-shot-only setting} can
+match the quality thresholds that GPT-4o achieves
+under the same prompting conditions. This gap motivates
+our study: if Qwen2.5-7B few-shot can replicate
+GPT-4o's few-shot performance, organizations could
+deploy a capable open-source model without any training
+investment.

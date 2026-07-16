@@ -1,0 +1,114 @@
+\section{Threats to Validity}
+\label{sec:threats}
+
+We discuss threats to validity following the taxonomy of Wohlin et al.~\cite{wohlin2012experimentation}.
+
+\subsection{Internal Validity}
+
+\textbf{Model version drift.}
+The \texttt{unsloth/Qwen2.5-7B-Instruct} checkpoint on HuggingFace
+may be silently updated between setup and the full run, affecting
+reproducibility. We mitigated this by pinning the exact model
+revision at download time and logging all inference configuration
+in \texttt{results/full\_api\_log.txt}.
+
+\textbf{Non-zero temperature.}
+Qwen2.5-7B-Instruct requires \texttt{temperature~>~0}; we used the
+minimum permitted value of 0.01. To ensure deterministic decoding
+we set \texttt{do\_sample=False} (greedy), which suppresses the
+effect of temperature on output selection.
+
+\textbf{Unspecified GPT-4o version in reference paper.}
+E02~\cite{acharya2025bugquality} reports threshold values
+(CTQRS=75\%, SBERT=0.82, ROUGE-1=0.47) attributed to
+``ChatGPT-4o'' without specifying the exact model version string
+(e.g., \texttt{gpt-4o-2024-08-06}). Notably, reference [53] within
+E02 cites ``ChatGPT (Version 3.5)'' while Figure~4 reports
+``ChatGPT 4o'', indicating an internal inconsistency in the source
+paper. We therefore treat the published thresholds as historical
+reference points rather than guaranteed reproducible values tied
+to a fixed model version.
+
+\subsection{External Validity}
+
+\textbf{Single domain.}
+Our test set is drawn exclusively from the Bugzilla/Mozilla domain.
+Results may not generalize to other bug tracking systems or
+application domains. We scoped our conclusions to the Bugzilla
+domain and note cross-domain generalization as future work
+(Section~\ref{sec:conclusion}).
+
+\textbf{Limited cross-domain data.}
+Our study does not include a cross-domain evaluation (originally
+planned as RQ2 using 37 Mojira/Minecraft pairs from
+E03~\cite{akyol2026improbr}). On closer inspection of the
+full text of E03, those 37 pairs constitute a curated internal
+set used for the ImproBR/ChatBR comparison and are not
+available as a reusable public corpus. We therefore excluded RQ2
+from the final scope and flag cross-domain validation as an open
+research direction.
+
+\subsection{Construct Validity}
+
+\textbf{Non-overlapping test splits.}
+Our test set (N=262) was produced by a 80/10/10 split with
+\texttt{random\_state=42}; E02 used N=3,903 after an additional
+SBERT-based deduplication step with an undisclosed seed,
+yielding N=391 test samples. The two test sets are unlikely to be
+identical, so published thresholds represent reference baselines
+rather than results on the same data.
+
+\textbf{Absence of paired baseline.}
+We cannot perform paired significance testing between Qwen and
+GPT-4o because per-instance GPT-4o outputs are not publicly
+available. This limitation is acknowledged by prior
+work~\cite{choi2025agentreport}, which states that
+``paired significance testing not feasible due to unavailability
+of per-instance baseline results.'' We adopt one-sample
+Wilcoxon tests against the published threshold medians as
+the methodologically sound alternative.
+
+\textbf{CTQRS scorer discrepancy.}
+The GindeLab scorer~\cite{acharya2025bugquality} hard-codes
+\texttt{max\_possible=16}, while E02 reports a maximum of 17 in
+the paper text. Computing the true maximum from the 13
+sub-check weights in the scorer source code yields 18 (RM1--4:
+$4\times1$; RR1/RR2/RR4/RR5: $4\times1$; RR3: $1\times2$;
+RA1--4: $4\times2$). We used \texttt{max\_possible=18} as the
+only value derivable from first principles without ambiguity,
+ensuring CTQRS percentages remain bounded in $[0, 100]$.
+We also corrected word-list noise in the RA sub-checks
+(tokens shorter than 3 characters or containing whitespace
+were removed) and applied whole-word boundary matching
+to prevent spurious matches; details are in
+\texttt{scripts/ctqrs\_scorer\_v2\_fixed.py}.
+
+\textbf{Metric sensitivity to style.}
+SBERT (\texttt{paraphrase-MiniLM-L6-v2}) encodes entire
+passages into fixed-size vectors and is sensitive to differences
+in length and formatting style, not only semantic content.
+Our ablation (Section~\ref{sec:discussion}) confirms that
+Qwen outputs are approximately 1.82$\times$ longer than
+ground-truth reports and use markdown headers absent
+from the plain-text Bugzilla reference reports, which
+depresses cosine similarity independently of content quality.
+CTQRS and ROUGE-1 provide complementary perspectives
+that are less affected by this style gap.
+
+\subsection{Conclusion Validity}
+
+\textbf{Multiple testing.}
+RQ1 involves three separate Wilcoxon tests (CTQRS, SBERT,
+ROUGE-1), inflating the familywise Type~I error rate.
+We applied Bonferroni correction ($\alpha_{\text{adj}} =
+0.05/3 \approx 0.017$) and report both raw and
+corrected $p$-values; the conclusions are unchanged
+after correction.
+
+\textbf{Effect size reporting.}
+$p$-values alone do not quantify practical importance.
+We therefore report Cliff's $\delta$ alongside every
+Wilcoxon test~\cite{arcuri2011practical}, interpreted
+using the conventional thresholds ($|\delta|<0.147$:
+negligible; $<0.33$: small; $<0.474$: medium; otherwise
+large).

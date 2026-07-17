@@ -95,6 +95,20 @@ depresses cosine similarity independently of content quality.
 CTQRS and ROUGE-1 provide complementary perspectives
 that are less affected by this style gap.
 
+\textbf{Ablation sampling inconsistency.}
+The length-constrained ablation reported in
+Section~\ref{sec:discussion} was generated using a fresh 90/10
+split of the raw, non-deduplicated dataset
+(\texttt{random\_state=42}), yielding 397 samples, rather than
+the deduplicated 262-sample test set used for the primary RQ1
+evaluation. Consequently, the ablation samples are not
+guaranteed to be identical to the RQ1 test set at the instance
+level. The reported ROUGE-1 and SBERT shifts
+(0.491$\rightarrow$0.532 and 0.632$\rightarrow$0.609,
+respectively) should therefore be interpreted as indicative of
+the length--style relationship on a comparable sample rather
+than as a strictly paired before/after comparison.
+
 \subsection{Conclusion Validity}
 
 \textbf{Multiple testing.}
@@ -109,6 +123,6 @@ after correction.
 $p$-values alone do not quantify practical importance.
 We therefore report Cliff's $\delta$ alongside every
 Wilcoxon test~\cite{arcuri2011practical}, interpreted
-using the conventional thresholds ($|\delta|<0.147$:
-negligible; $<0.33$: small; $<0.474$: medium; otherwise
+using the conventional thresholds ($|\delta|<0.147$
+negligible, $<0.33$ small, $<0.474$ medium, otherwise
 large).
